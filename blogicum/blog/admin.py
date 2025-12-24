@@ -1,50 +1,44 @@
-"""Admin configuration for blog app."""
-
 from django.contrib import admin
 
-from .models import Category, Comment, Location, Post
+from .models import Category, Location, Post
+
+
+class PostInline(admin.StackedInline):
+    model = Post
+    extra = 0
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('title', 'slug', 'is_published', 'created_at')
-    list_filter = ('is_published',)
-    search_fields = ('title', 'slug')
-    prepopulated_fields = {'slug': ('title',)}
+    inlines = (
+        PostInline,
+    )
 
 
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'is_published', 'created_at')
-    list_filter = ('is_published',)
-    search_fields = ('name',)
+    inlines = (
+        PostInline,
+    )
 
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = (
         'title',
-        'category',
-        'location',
-        'author',
-        'is_published',
+        'text',
         'pub_date',
-        'created_at',
+        'author',
+        'location',
+        'category',
+        'is_published',
+        'created_at'
     )
-    list_filter = ('is_published', 'category')
-    search_fields = ('title', 'text')
-    list_select_related = ('category', 'location', 'author')
-    raw_id_fields = ('author',)
-    date_hierarchy = 'pub_date'
-
-
-@admin.register(Comment)
-class CommentAdmin(admin.ModelAdmin):
-    list_display = ('post', 'author', 'created_at', 'text_preview')
-    list_filter = ('created_at',)
-    search_fields = ('text', 'author__username', 'post__title')
-    raw_id_fields = ('author', 'post')
-
-    def text_preview(self, obj):
-        return obj.text[:50] + '...' if len(obj.text) > 50 else obj.text
-    text_preview.short_description = 'Превью текста'
+    list_editable = (
+        'is_published',
+        'category',
+        'pub_date'
+    )
+    search_fields = ('title',)
+    list_filter = ('category',)
+    list_display_links = ('title',)
